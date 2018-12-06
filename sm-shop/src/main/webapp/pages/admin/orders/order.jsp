@@ -563,8 +563,7 @@ function captureOrder(orderId){
 				
 
 				
-				</div>
-
+				</div> 
 						
 
 	

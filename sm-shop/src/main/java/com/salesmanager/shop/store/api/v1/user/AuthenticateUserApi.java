@@ -1,6 +1,8 @@
 package com.salesmanager.shop.store.api.v1.user;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.apache.http.auth.AuthenticationException;
@@ -19,11 +21,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.salesmanager.core.model.merchant.MerchantStore;
+import com.salesmanager.core.model.reference.language.Language;
+import com.salesmanager.shop.model.customer.PersistableCustomer;
+import com.salesmanager.shop.store.controller.customer.facade.CustomerFacade;
+import com.salesmanager.shop.store.controller.store.facade.StoreFacade;
 import com.salesmanager.shop.store.security.AuthenticationRequest;
 import com.salesmanager.shop.store.security.AuthenticationResponse;
 import com.salesmanager.shop.store.security.JWTTokenUtil;
 import com.salesmanager.shop.store.security.user.JWTUser;
+import com.salesmanager.shop.utils.LanguageUtils;
 
 /**
  * Authenticates a User (Administration purpose)
@@ -40,10 +50,7 @@ public class AuthenticateUserApi {
     private String tokenHeader;
 
     @Inject
-    private AuthenticationManager jwtAdminAuthenticationManager;
-    
-    @Inject
-    private UserDetailsService jwtAdminDetailsService;
+    private AuthenticationManager jwtCustomerAuthenticationManager;
 
     @Inject
     private JWTTokenUtil jwtTokenUtil;
@@ -53,7 +60,7 @@ public class AuthenticateUserApi {
 
 
 	/**
-	 * Authenticate a user using username & password
+	 * Authenticate a customer using username & password
 	 * @param authenticationRequest
 	 * @param device
 	 * @return
@@ -68,7 +75,7 @@ public class AuthenticateUserApi {
     		
 	
         		//to be used when username and password are set
-        		authentication = jwtAdminAuthenticationManager.authenticate(
+        		authentication = jwtCustomerAuthenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
                                 authenticationRequest.getUsername(),
                                 authenticationRequest.getPassword()
@@ -77,7 +84,6 @@ public class AuthenticateUserApi {
 
     		
     	} catch(Exception e) {
-    		LOGGER.error("Error during authentication " + e.getMessage());
     		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     	}
     	
@@ -88,13 +94,15 @@ public class AuthenticateUserApi {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Reload password post-security so we can generate token
-        final JWTUser userDetails = (JWTUser)jwtAdminDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+        // todo create one for social
+        //final JWTUser userDetails = (JWTUser)jwtCustomerDetailsService.loadUserByUsername(authenticationRequest.getUsername());
         
-        final String token = jwtTokenUtil.generateToken(userDetails, device);
+        //final String token = jwtTokenUtil.generateToken(userDetails, device);
 
         // Return the token
-        return ResponseEntity.ok(new AuthenticationResponse(userDetails.getId(),token));
-
+        //return ResponseEntity.ok(new AuthenticationResponse(userDetails.getId(),token));
+        
+        return null;
     }
 
 /*    @RequestMapping(value = "/auth/refresh", method = RequestMethod.GET)

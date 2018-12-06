@@ -8,6 +8,12 @@ import javax.inject.Inject;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
 import com.salesmanager.core.business.modules.integration.shipping.impl.ShippingDecisionPreProcessorImpl;
 import com.salesmanager.core.model.common.Delivery;
@@ -25,7 +31,7 @@ public class ShippingMethodDecisionTest extends com.salesmanager.test.common.Abs
 	@Inject
 	ShippingDecisionPreProcessorImpl shippingMethodDecisionProcess;
 
-	@Test
+	//@Test
 	@Ignore
 	public void validateShippingMethod() throws Exception {
 		

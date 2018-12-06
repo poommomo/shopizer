@@ -9,6 +9,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -97,14 +98,18 @@ public class CountryServiceImpl extends SalesManagerEntityServiceImpl<Integer, C
 				//set names
 				for(Country country : countries) {
 					
-					CountryDescription description = country.getDescriptions().iterator().next();
+					CountryDescription description = country.getDescriptions().get(0);
 					country.setName(description.getName());
 					
 				}
 				
 				cache.putInCache(countries, "COUNTRIES_" + language.getCode());
 			}
-
+			
+			
+		
+		
+		
 		} catch (Exception e) {
 			LOGGER.error("getCountries()", e);
 		}
@@ -112,17 +117,6 @@ public class CountryServiceImpl extends SalesManagerEntityServiceImpl<Integer, C
 		return countries;
 		
 		
-	}
-
-	@Override
-	public List<Country> listCountryZones(Language language) throws ServiceException {
-		try {
-			return countryRepository.listCountryZonesByLanguage(language.getId());
-		} catch(Exception e) {
-			LOGGER.error("listCountryZones", e);
-			throw new ServiceException(e);
-		}
-
 	}
 
 

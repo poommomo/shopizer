@@ -442,7 +442,7 @@ public class ShippingServiceImpl implements ShippingService {
 				configuration = modules.get(module);
 				//use the first active module
 				if(configuration.isActive()) {
-					shippingQuoteModule = shippingModules.get(module);
+					shippingQuoteModule = this.shippingModules.get(module);
 					if(shippingQuoteModule instanceof ShippingQuotePrePostProcessModule) {
 						shippingQuoteModule = null;
 						continue;
@@ -633,7 +633,9 @@ public class ShippingServiceImpl implements ShippingService {
 					shippingOptions = new ArrayList<ShippingOption>();
 					shippingOptions.add(selectedOption);
 				}
-
+				
+				//TODO save shipping option
+			
 			}
 			
 			/** set final delivery address **/
@@ -663,54 +665,52 @@ public class ShippingServiceImpl implements ShippingService {
 				}
 			}
 			
-			if(shippingQuote!=null && CollectionUtils.isNotEmpty(shippingQuote.getShippingOptions())) {
-				//save SHIPPING OPTIONS
-				List<ShippingOption> finalShippingOptions = shippingQuote.getShippingOptions();
-				for(ShippingOption option : finalShippingOptions) {
-					
-					//transform to Quote
-					Quote q = new Quote();
-					q.setCartId(shoppingCartId);
-					q.setDelivery(delivery);
-					if(!StringUtils.isBlank(option.getEstimatedNumberOfDays())) {
+			//save SHIPPING OPTIONS
+			List<ShippingOption> finalShippingOptions = shippingQuote.getShippingOptions();
+			for(ShippingOption option : finalShippingOptions) {
+				
+				//transform to Quote
+				Quote q = new Quote();
+				q.setCartId(shoppingCartId);
+				q.setDelivery(delivery);
+				if(!StringUtils.isBlank(option.getEstimatedNumberOfDays())) {
+					try {
+						q.setEstimatedNumberOfDays(new Integer(option.getEstimatedNumberOfDays()));
+					} catch(Exception e) {
+						LOGGER.error("Cannot cast to integer " + option.getEstimatedNumberOfDays());
+					}
+				}
+				
+				if(freeShipping) {
+					q.setFreeShipping(true);
+					q.setPrice(new BigDecimal(0));
+					q.setModule("FREE");
+					q.setOptionCode("FREE");
+					q.setOptionName("FREE");
+				} else {
+					q.setModule(option.getShippingModuleCode());
+					q.setOptionCode(option.getOptionCode());
+					if(!StringUtils.isBlank(option.getOptionDeliveryDate())) {
 						try {
-							q.setEstimatedNumberOfDays(new Integer(option.getEstimatedNumberOfDays()));
+						q.setOptionDeliveryDate(DateUtil.formatDate(option.getOptionDeliveryDate()));
 						} catch(Exception e) {
-							LOGGER.error("Cannot cast to integer " + option.getEstimatedNumberOfDays());
+							LOGGER.error("Cannot transform to date " + option.getOptionDeliveryDate());
 						}
 					}
-					
-					if(freeShipping) {
-						q.setFreeShipping(true);
-						q.setPrice(new BigDecimal(0));
-						q.setModule("FREE");
-						q.setOptionCode("FREE");
-						q.setOptionName("FREE");
-					} else {
-						q.setModule(option.getShippingModuleCode());
-						q.setOptionCode(option.getOptionCode());
-						if(!StringUtils.isBlank(option.getOptionDeliveryDate())) {
-							try {
-							q.setOptionDeliveryDate(DateUtil.formatDate(option.getOptionDeliveryDate()));
-							} catch(Exception e) {
-								LOGGER.error("Cannot transform to date " + option.getOptionDeliveryDate());
-							}
-						}
-						q.setOptionName(option.getOptionName());
-						q.setOptionShippingDate(new Date());
-						q.setPrice(option.getOptionPrice());
-						
-					}
-					
-					if(handlingFees != null) {
-						q.setHandling(handlingFees);
-					}
-					
-					q.setQuoteDate(new Date());
-					shippingQuoteService.save(q);
-					option.setShippingQuoteOptionId(q.getId());
+					q.setOptionName(option.getOptionName());
+					q.setOptionShippingDate(new Date());
+					q.setPrice(option.getOptionPrice());
 					
 				}
+				
+				if(handlingFees != null) {
+					q.setHandling(handlingFees);
+				}
+				
+				q.setQuoteDate(new Date());
+				shippingQuoteService.save(q);
+				option.setShippingQuoteOptionId(q.getId());
+				
 			}
 			
 			

@@ -7,14 +7,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.drools.KnowledgeBase;
 import org.drools.runtime.StatelessKnowledgeSession;
-import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,12 +37,9 @@ public class ShippingDecisionPreProcessorImpl implements ShippingQuotePrePostPro
 	
 	private final static String MODULE_CODE = "shippingDecisionModule";
 	
-	//private StatelessKnowledgeSession shippingMethodDecision;
+	private StatelessKnowledgeSession shippingMethodDecision;
 	
-	//private KnowledgeBase kbase;
-	
-	@Inject
-	KieContainer kieShippingDecisionContainer;
+	private KnowledgeBase kbase;
 	
 	@Override
 	public void prePostProcessShippingQuotes(ShippingQuote quote,
@@ -132,11 +125,7 @@ public class ShippingDecisionPreProcessorImpl implements ShippingQuotePrePostPro
 		LOGGER.debug("Setting input parameters " + inputParameters.toString());
 		System.out.println(inputParameters.toString());
 		
-        KieSession kieSession = kieShippingDecisionContainer.newKieSession();
-        kieSession.insert(inputParameters);
-        kieSession.fireAllRules();
-		
-		//shippingMethodDecision.execute(Arrays.asList(new Object[] { inputParameters }));
+		shippingMethodDecision.execute(Arrays.asList(new Object[] { inputParameters }));
 		
 		LOGGER.debug("Using shipping nodule " + inputParameters.getModuleName());
 		
@@ -151,7 +140,7 @@ public class ShippingDecisionPreProcessorImpl implements ShippingQuotePrePostPro
 		
 	}
 
-/*	public StatelessKnowledgeSession getShippingMethodDecision() {
+	public StatelessKnowledgeSession getShippingMethodDecision() {
 		return shippingMethodDecision;
 	}
 
@@ -165,7 +154,7 @@ public class ShippingDecisionPreProcessorImpl implements ShippingQuotePrePostPro
 
 	public void setKbase(KnowledgeBase kbase) {
 		this.kbase = kbase;
-	}*/
+	}
 
 	@Override
 	public String getModuleCode() {

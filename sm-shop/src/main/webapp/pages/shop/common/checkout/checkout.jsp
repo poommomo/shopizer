@@ -234,9 +234,6 @@ function isCheckoutFieldValid(field) {
 		//console.log($('input[name=paymentMethodType]:checked', checkoutFormId).val());
 		//var paymentMethod = $('input[name=paymentMethodType]:checked', checkoutFormId).val();
 		var paymentType = $('input[name=paymentMethodType]').val();
-		if(!paymentType) {
-			paymentType = '${order.paymentMethodType}';
-		}
 		console.log('Payment Method Type ' + paymentType);
 		if(paymentType=='CREDITCARD') {
 			console.log(paymentType);
@@ -486,31 +483,20 @@ function bindActions() {
 		else if(paymentSelection.indexOf('braintree') >= 0) {
 			//console.log('Braintree ');
 			$('#paymentMethodType').val('CREDITCARD');
-			log('Set payment method type ' + $('#paymentMethodType').val());
+			console.log('Set payment method type ' + $('#paymentMethodType').val());
 			initBraintreePayment();
-		}
-		else if(paymentSelection.indexOf('moneyorder') >= 0) {
-			log('Money order ' + $('input[name=paymentMethodType]').val());
-			$('#paymentMethodType').attr("value", 'MONEYORDER');
-			log('Payment method type -> ' + $('input[name=paymentMethodType]').val());
-			submitForm()
 		}
 		else if(paymentSelection.indexOf('beanstream') >= 0) {
 			//console.log('Beanstream ');
 			$('#paymentMethodType').val('CREDITCARD');
-			submitForm();
 		} else {
 			//submit form
-			submitForm();
+			console.log('Checkout ');
+			$('#pageContainer').hideLoading();
+			$('#checkoutForm').submit();
 			
 		}
     });
-}
-
-function submitForm() {
-	log('Checkout ');
-	$('#pageContainer').hideLoading();
-	$('#checkoutForm').submit();
 }
 
 
@@ -827,12 +813,7 @@ $(document).ready(function() {
 		-->
 		formValid = isFormValid();
 		
-		paymentModule = '${order.defaultPaymentMethodCode}';
-		if(!paymentModule) {
-			paymentModule = '${order.paymentModule}';
-		}
-		
-		setPaymentModule(paymentModule);
+		setPaymentModule('${order.defaultPaymentMethodCode}')
 
 		bindActions();
 		
@@ -1373,7 +1354,7 @@ $(document).ready(function() {
 													    			
 													    		</div>
 									    				</c:forEach>
-									    				<input type="hidden" id="paymentMethodType" name="paymentMethodType" value="<c:if test="${order.paymentMethodType!=null}"><c:out value="${order.paymentMethodType}"/></c:if>"/>
+									    				<input type="hidden" id="paymentMethodType" name="paymentMethodType" value="<c:if test="${order.paymentType!=null}"><c:out value="${order.paymentType}"/></c:if>"/>
 									    				<input type="hidden" id="paymentModule" name="paymentModule" value="<c:choose><c:when test="${order.paymentModule!=null}"><c:out value="${order.paymentModule}"/></c:when><c:otherwise><c:out value="${paymentModule}" /></c:otherwise></c:choose>"/>
 									    				</div>
 									 			</div>

@@ -6,7 +6,6 @@ import java.util.List;
 import com.salesmanager.shop.model.catalog.category.ReadableCategory;
 import com.salesmanager.shop.model.catalog.manufacturer.ReadableManufacturer;
 import com.salesmanager.shop.model.catalog.product.attribute.ReadableProductAttribute;
-import com.salesmanager.shop.model.catalog.product.attribute.ReadableProductOption;
 
 
 public class ReadableProduct extends ProductEntity implements Serializable {
@@ -23,7 +22,6 @@ public class ReadableProduct extends ProductEntity implements Serializable {
 	private List<ReadableImage> images;
 	private ReadableManufacturer manufacturer;
 	private List<ReadableProductAttribute> attributes;
-	private List<ReadableProductOption> options;
 	private List<ReadableCategory> categories;
 	private boolean canBePurchased = false;
 	
@@ -97,12 +95,6 @@ public class ReadableProduct extends ProductEntity implements Serializable {
 	}
 	public void setCategories(List<ReadableCategory> categories) {
 		this.categories = categories;
-	}
-	public List<ReadableProductOption> getOptions() {
-		return options;
-	}
-	public void setOptions(List<ReadableProductOption> options) {
-		this.options = options;
 	}
 
 }

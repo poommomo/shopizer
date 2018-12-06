@@ -36,8 +36,6 @@ import com.salesmanager.shop.store.controller.customer.facade.CustomerFacade;
 import com.salesmanager.shop.store.controller.store.facade.StoreFacade;
 import com.salesmanager.shop.utils.LanguageUtils;
 
-import io.swagger.annotations.ApiOperation;
-
 @Controller
 @RequestMapping("/api/v1")
 public class CustomerApi {
@@ -62,8 +60,7 @@ public class CustomerApi {
 	 * Create new customer for a given MerchantStore
 	 */
 	@RequestMapping( value={"/private/customers"}, method=RequestMethod.POST)
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(httpMethod = "POST", value = "Creates a customer", notes = "Requires administration access", produces = "application/json", response = PersistableCustomer.class)
+	@ResponseStatus(HttpStatus.CREATED)
 	@ResponseBody
 	public PersistableCustomer create(@Valid @RequestBody PersistableCustomer customer, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -71,7 +68,7 @@ public class CustomerApi {
 		
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 
 			customerFacade.create(customer, merchantStore);
 			
@@ -95,13 +92,12 @@ public class CustomerApi {
 	
     @ResponseStatus(HttpStatus.OK)
 	@RequestMapping( value="/private/customers/{id}", method=RequestMethod.PUT)
-	@ApiOperation(httpMethod = "PUT", value = "Updates a customer", notes = "Requires administration access", produces = "application/json", response = PersistableCustomer.class)
     public @ResponseBody PersistableCustomer update(@PathVariable Long id, @Valid @RequestBody PersistableCustomer customer, HttpServletRequest request, HttpServletResponse response) throws Exception {
 	
     	
 		try {
 
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			customerFacade.update(customer, merchantStore);
 			return customer;
 			
@@ -118,7 +114,6 @@ public class CustomerApi {
     
     @ResponseStatus(HttpStatus.OK)
 	@RequestMapping( value="/private/customers/{id}", method=RequestMethod.DELETE)
-    @ApiOperation(httpMethod = "DELETE", value = "Deletes a customer", notes = "Requires administration access",response = Void.class)
     public void delete(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		try {
@@ -158,7 +153,7 @@ public class CustomerApi {
 
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 			
 			CustomerCriteria customerCriteria = new CustomerCriteria();
@@ -208,7 +203,7 @@ public class CustomerApi {
 		
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);
 
 			ReadableCustomer customer = customerFacade.getCustomerById(id, merchantStore, language);
@@ -237,7 +232,7 @@ public class CustomerApi {
 		
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);
 
 			Principal principal = request.getUserPrincipal();

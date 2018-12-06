@@ -126,7 +126,6 @@ public class ShopProductController {
 	}
 
 
-	@SuppressWarnings("unchecked")
 	public String display(final String reference, final String friendlyUrl, Model model, HttpServletRequest request, HttpServletResponse response, Locale locale) throws Exception {
 		
 

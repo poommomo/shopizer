@@ -26,7 +26,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
-import com.salesmanager.core.business.constants.Constants;
 import com.salesmanager.core.business.exception.ConversionException;
 import com.salesmanager.core.business.exception.ServiceException;
 import com.salesmanager.core.business.services.catalog.product.PricingService;
@@ -49,8 +48,6 @@ import com.salesmanager.core.business.services.system.EmailService;
 import com.salesmanager.core.business.services.user.GroupService;
 import com.salesmanager.core.business.utils.CoreConfiguration;
 import com.salesmanager.core.business.utils.CreditCardUtils;
-import com.salesmanager.core.model.catalog.product.Product;
-import com.salesmanager.core.model.catalog.product.availability.ProductAvailability;
 import com.salesmanager.core.model.common.Billing;
 import com.salesmanager.core.model.common.Delivery;
 import com.salesmanager.core.model.customer.Customer;
@@ -63,7 +60,6 @@ import com.salesmanager.core.model.order.OrderTotalSummary;
 import com.salesmanager.core.model.order.attributes.OrderAttribute;
 import com.salesmanager.core.model.order.orderproduct.OrderProduct;
 import com.salesmanager.core.model.order.orderstatus.OrderStatus;
-import com.salesmanager.core.model.order.orderstatus.OrderStatusHistory;
 import com.salesmanager.core.model.order.payment.CreditCard;
 import com.salesmanager.core.model.payments.CreditCardPayment;
 import com.salesmanager.core.model.payments.CreditCardType;
@@ -77,9 +73,9 @@ import com.salesmanager.core.model.shipping.ShippingQuote;
 import com.salesmanager.core.model.shipping.ShippingSummary;
 import com.salesmanager.core.model.shoppingcart.ShoppingCart;
 import com.salesmanager.core.model.shoppingcart.ShoppingCartItem;
+import com.salesmanager.shop.model.customer.Address;
 import com.salesmanager.shop.model.customer.PersistableCustomer;
 import com.salesmanager.shop.model.customer.ReadableCustomer;
-import com.salesmanager.shop.model.customer.address.Address;
 import com.salesmanager.shop.model.order.OrderEntity;
 import com.salesmanager.shop.model.order.PersistableOrder;
 import com.salesmanager.shop.model.order.PersistableOrderApi;
@@ -353,41 +349,12 @@ public class OrderFacadeImpl implements OrderFacade {
 			List<ShoppingCartItem> shoppingCartItems = order.getShoppingCartItems();
 			Set<OrderProduct> orderProducts = new LinkedHashSet<OrderProduct>();
 			
-			if(!StringUtils.isBlank(order.getComments())) {
-				OrderStatusHistory statusHistory = new OrderStatusHistory();
-				statusHistory.setStatus(OrderStatus.ORDERED);
-				statusHistory.setOrder(modelOrder);
-				statusHistory.setDateAdded(new Date());
-				statusHistory.setComments(order.getComments());
-				modelOrder.getOrderHistory().add(statusHistory);
-			}
-			
 			OrderProductPopulator orderProductPopulator = new OrderProductPopulator();
 			orderProductPopulator.setDigitalProductService(digitalProductService);
 			orderProductPopulator.setProductAttributeService(productAttributeService);
 			orderProductPopulator.setProductService(productService);
 			
 			for(ShoppingCartItem item : shoppingCartItems) {
-				
-				/**
-				 * Before processing order quantity of item must be > 0
-				 */
-				
-				Product product = productService.getById(item.getProductId());
-				if(product == null) {
-					throw new ServiceException(ServiceException.EXCEPTION_INVENTORY_MISMATCH);
-				}
-				
-				for(ProductAvailability availability : product.getAvailabilities()) {
-					if (availability.getRegion().equals(Constants.ALL_REGIONS)) {
-		    			int qty = availability.getProductQuantity();
-		    			if(qty < item.getQuantity()) {
-		    				throw new ServiceException(ServiceException.EXCEPTION_INVENTORY_MISMATCH);
-		    			}
-					}	
-				}
-				
-				
 				OrderProduct orderProduct = new OrderProduct();
 				orderProduct = orderProductPopulator.populate(item, orderProduct , store, language);
 				orderProduct.setOrder(modelOrder);
@@ -463,17 +430,13 @@ public class OrderFacadeImpl implements OrderFacade {
 				
 				Map<String,String> paymentMetaData = order.getPayment();
 				payment.setPaymentMetaData(paymentMetaData);
-				payment.setPaymentType(PaymentType.valueOf(paymentType));
-				payment.setAmount(order.getOrderTotalSummary().getTotal());
-				payment.setModuleName(order.getPaymentModule());
-				payment.setCurrency(modelOrder.getCurrency());
 				
 
 				
 				CreditCardType creditCardType =null;
 				String cardType = order.getPayment().get("creditcard_card_type");
 				
-				//supported credit cards
+				
 				if(CreditCardType.AMEX.name().equalsIgnoreCase(cardType)) {
 					creditCardType = CreditCardType.AMEX;
 				} else if(CreditCardType.VISA.name().equalsIgnoreCase(cardType)) {
@@ -497,11 +460,9 @@ public class OrderFacadeImpl implements OrderFacade {
 					cc.setCcExpires(((CreditCardPayment)payment).getExpirationMonth() + "-" + ((CreditCardPayment)payment).getExpirationYear());
 				
 					//hash credit card number
-					if(!StringUtils.isBlank(cc.getCcNumber())) {
-						String maskedNumber = CreditCardUtils.maskCardNumber(order.getPayment().get("creditcard_card_number"));
-						cc.setCcNumber(maskedNumber);
-						modelOrder.setCreditCard(cc);
-					}
+					String maskedNumber = CreditCardUtils.maskCardNumber(order.getPayment().get("creditcard_card_number"));
+					cc.setCcNumber(maskedNumber);
+					modelOrder.setCreditCard(cc);
 				
 				}
 				
@@ -526,8 +487,6 @@ public class OrderFacadeImpl implements OrderFacade {
 
 			modelOrder.setPaymentModuleCode(order.getPaymentModule());
 			payment.setModuleName(order.getPaymentModule());
-			
-
 
 			if(transaction!=null) {
 				orderService.processOrder(modelOrder, customer, order.getShoppingCartItems(), summary, payment, store);

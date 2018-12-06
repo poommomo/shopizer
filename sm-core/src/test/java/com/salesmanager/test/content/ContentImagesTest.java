@@ -14,6 +14,8 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.salesmanager.core.business.exception.ServiceException;
 import com.salesmanager.core.business.services.content.ContentService;
@@ -28,7 +30,7 @@ import com.salesmanager.core.model.merchant.MerchantStore;
 
 
 /**
- * Test content with CMS
+ * Test content with infinispan
  * store logo
  * @author Carl Samson
  *

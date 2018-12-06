@@ -3,21 +3,21 @@
  */
 package com.salesmanager.shop.store.controller.customer.facade;
 
+import com.salesmanager.core.model.customer.Customer;
+import com.salesmanager.core.model.customer.review.CustomerReview;
+
 import java.util.List;
 
 import com.salesmanager.core.business.services.customer.CustomerService;
-import com.salesmanager.core.model.customer.Customer;
-import com.salesmanager.core.model.customer.review.CustomerReview;
 import com.salesmanager.core.model.merchant.MerchantStore;
 import com.salesmanager.core.model.reference.language.Language;
 import com.salesmanager.core.model.shoppingcart.ShoppingCart;
+import com.salesmanager.shop.model.customer.Address;
 import com.salesmanager.shop.model.customer.CustomerEntity;
 import com.salesmanager.shop.model.customer.PersistableCustomer;
 import com.salesmanager.shop.model.customer.PersistableCustomerReview;
 import com.salesmanager.shop.model.customer.ReadableCustomer;
 import com.salesmanager.shop.model.customer.ReadableCustomerReview;
-import com.salesmanager.shop.model.customer.address.Address;
-import com.salesmanager.shop.model.customer.optin.PersistableCustomerOptin;
 
 /**
  * <p>Customer facade working as a bridge between {@link CustomerService} and Controller
@@ -25,7 +25,7 @@ import com.salesmanager.shop.model.customer.optin.PersistableCustomerOptin;
  * </p>
  *
  * @author Umesh Awasthi
- * @version 2.2.1
+ * @version 1/2
  *
  *
  */
@@ -96,15 +96,6 @@ public interface CustomerFacade
 	void create(PersistableCustomer customer, MerchantStore store) throws Exception;
 	
 	/**
-	 * Reset customer password
-	 * @param customer
-	 * @param store
-	 * @param language
-	 * @throws Exception
-	 */
-	void resetPassword(Customer customer, MerchantStore store, Language language) throws Exception;
-	
-	/**
 	 * Updates a Customer
 	 * @param customer
 	 * @param store
@@ -137,13 +128,4 @@ public interface CustomerFacade
 	 * @param language
 	 */
 	void deleteCustomerReview(CustomerReview review, MerchantStore store, Language language) throws Exception;
-	
-	/**
-	 * Optin a customer to newsletter
-	 * @param optin
-	 * @param store
-	 * @throws Exception
-	 */
-	void optinCustomer(PersistableCustomerOptin optin, MerchantStore store) throws Exception;
-
 }

@@ -2,13 +2,9 @@ package com.salesmanager.core.business.modules.order.total;
 
 import java.math.BigDecimal;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang.Validate;
 import org.drools.KnowledgeBase;
 import org.drools.runtime.StatelessKnowledgeSession;
-import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +21,8 @@ import com.salesmanager.core.model.shoppingcart.ShoppingCartItem;
 import com.salesmanager.core.modules.order.total.OrderTotalPostProcessorModule;
 
 
+
+
 /**
  * Add variation to the OrderTotal
  * This has to be defined in shopizer-core-ordertotal-processors
@@ -38,12 +36,9 @@ public class ManufacturerShippingCodeOrderTotalModuleImpl implements OrderTotalP
 	private String name;
 	private String code;
 	
-	//private StatelessKnowledgeSession orderTotalMethodDecision;//injected from xml file
+	private StatelessKnowledgeSession orderTotalMethodDecision;//injected from xml file
 	
-	//private KnowledgeBase kbase;//injected from xml file
-	
-	@Inject
-	KieContainer kieManufacturerBasedPricingContainer;
+	private KnowledgeBase kbase;//injected from xml file
 	
 
 	PricingService pricingService;
@@ -63,7 +58,7 @@ public class ManufacturerShippingCodeOrderTotalModuleImpl implements OrderTotalP
 			throws Exception {
 
 		
-	    Validate.notNull(product,"product must not be null");
+		Validate.notNull(product,"product must not be null");
 		Validate.notNull(product.getManufacturer(),"product manufacturer must not be null");
 		
 		//requires shipping summary, otherwise return null
@@ -78,13 +73,7 @@ public class ManufacturerShippingCodeOrderTotalModuleImpl implements OrderTotalP
 		inputParameters.setShippingMethod(summary.getShippingSummary().getShippingOptionCode());
 		
 		LOGGER.debug("Setting input parameters " + inputParameters.toString());
-		
-        KieSession kieSession = kieManufacturerBasedPricingContainer.newKieSession();
-        kieSession.insert(inputParameters);
-        kieSession.fireAllRules();
-		
-		
-		//orderTotalMethodDecision.execute(inputParameters);
+		orderTotalMethodDecision.execute(inputParameters);
 		
 		
 		LOGGER.debug("Applied discount " + inputParameters.getDiscount());
@@ -110,10 +99,9 @@ public class ManufacturerShippingCodeOrderTotalModuleImpl implements OrderTotalP
 		
 		return orderTotal;
 
-
 	}
 	
-/*	public KnowledgeBase getKbase() {
+	public KnowledgeBase getKbase() {
 		return kbase;
 	}
 
@@ -128,7 +116,7 @@ public class ManufacturerShippingCodeOrderTotalModuleImpl implements OrderTotalP
 
 	public void setOrderTotalMethodDecision(StatelessKnowledgeSession orderTotalMethodDecision) {
 		this.orderTotalMethodDecision = orderTotalMethodDecision;
-	}*/
+	}
 
 	@Override
 	public String getName() {

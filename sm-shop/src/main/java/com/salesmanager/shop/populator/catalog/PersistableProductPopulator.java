@@ -1,17 +1,5 @@
 package com.salesmanager.shop.populator.catalog;
 
-import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.StringUtils;
-
 import com.salesmanager.core.business.exception.ConversionException;
 import com.salesmanager.core.business.services.catalog.category.CategoryService;
 import com.salesmanager.core.business.services.catalog.product.attribute.ProductOptionService;
@@ -37,8 +25,15 @@ import com.salesmanager.core.model.reference.language.Language;
 import com.salesmanager.shop.model.catalog.product.PersistableImage;
 import com.salesmanager.shop.model.catalog.product.PersistableProduct;
 import com.salesmanager.shop.model.catalog.product.ProductPriceEntity;
+import com.salesmanager.shop.model.customer.Customer;
 import com.salesmanager.shop.utils.DateUtil;
-import com.salesmanager.shop.utils.ImageFilePath;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+import java.util.*;
 
 
 
@@ -54,10 +49,7 @@ public class PersistableProductPopulator extends
 	private ProductOptionService productOptionService;
 	private ProductOptionValueService productOptionValueService;
 	private CustomerService customerService;
-
 	
-
-
 
 	@Override
 	public Product populate(PersistableProduct source,
@@ -249,7 +241,7 @@ public class PersistableProductPopulator extends
 					ByteArrayInputStream in = new ByteArrayInputStream(img.getBytes());
 					ProductImage productImage = new ProductImage();
 					productImage.setProduct(target);
-					productImage.setProductImage(img.getName());
+					productImage.setProductImage(img.getImageName());
 					productImage.setImage(in);
 					target.getImages().add(productImage);
 				}
@@ -257,7 +249,7 @@ public class PersistableProductPopulator extends
 			
 			//attributes
 			if(source.getAttributes()!=null) {
-				for(com.salesmanager.shop.model.catalog.product.attribute.PersistableProductAttribute attr : source.getAttributes()) {
+				for(com.salesmanager.shop.model.catalog.product.attribute.ProductAttributeEntity attr : source.getAttributes()) {
 					
 					ProductOption productOption = null;
 							

@@ -5,7 +5,6 @@ package com.salesmanager.shop.store.controller.customer.facade;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -17,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,14 +26,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.salesmanager.core.business.exception.ConversionException;
-import com.salesmanager.core.business.modules.email.Email;
 import com.salesmanager.core.business.services.catalog.product.PricingService;
 import com.salesmanager.core.business.services.catalog.product.ProductService;
 import com.salesmanager.core.business.services.catalog.product.attribute.ProductAttributeService;
 import com.salesmanager.core.business.services.customer.CustomerService;
 import com.salesmanager.core.business.services.customer.attribute.CustomerOptionService;
 import com.salesmanager.core.business.services.customer.attribute.CustomerOptionValueService;
-import com.salesmanager.core.business.services.customer.optin.CustomerOptinService;
 import com.salesmanager.core.business.services.customer.review.CustomerReviewService;
 import com.salesmanager.core.business.services.reference.country.CountryService;
 import com.salesmanager.core.business.services.reference.language.LanguageService;
@@ -43,11 +39,9 @@ import com.salesmanager.core.business.services.reference.zone.ZoneService;
 import com.salesmanager.core.business.services.shoppingcart.ShoppingCartCalculationService;
 import com.salesmanager.core.business.services.shoppingcart.ShoppingCartService;
 import com.salesmanager.core.business.services.system.EmailService;
-import com.salesmanager.core.business.services.system.optin.OptinService;
 import com.salesmanager.core.business.services.user.GroupService;
 import com.salesmanager.core.business.services.user.PermissionService;
 import com.salesmanager.core.business.utils.CoreConfiguration;
-import com.salesmanager.core.business.utils.ajax.AjaxResponse;
 import com.salesmanager.core.model.customer.Customer;
 import com.salesmanager.core.model.customer.review.CustomerReview;
 import com.salesmanager.core.model.merchant.MerchantStore;
@@ -55,22 +49,18 @@ import com.salesmanager.core.model.reference.country.Country;
 import com.salesmanager.core.model.reference.language.Language;
 import com.salesmanager.core.model.reference.zone.Zone;
 import com.salesmanager.core.model.shoppingcart.ShoppingCart;
-import com.salesmanager.core.model.system.optin.Optin;
-import com.salesmanager.core.model.system.optin.OptinType;
 import com.salesmanager.core.model.user.Group;
 import com.salesmanager.core.model.user.GroupType;
 import com.salesmanager.core.model.user.Permission;
 import com.salesmanager.shop.admin.model.userpassword.UserReset;
 import com.salesmanager.shop.constants.Constants;
-import com.salesmanager.shop.constants.EmailConstants;
+import com.salesmanager.shop.model.customer.Address;
 import com.salesmanager.shop.model.customer.CustomerEntity;
 import com.salesmanager.shop.model.customer.PersistableCustomer;
 import com.salesmanager.shop.model.customer.PersistableCustomerReview;
 import com.salesmanager.shop.model.customer.ReadableCustomer;
 import com.salesmanager.shop.model.customer.ReadableCustomerReview;
 import com.salesmanager.shop.model.customer.UserAlreadyExistException;
-import com.salesmanager.shop.model.customer.address.Address;
-import com.salesmanager.shop.model.customer.optin.PersistableCustomerOptin;
 import com.salesmanager.shop.populator.customer.CustomerBillingAddressPopulator;
 import com.salesmanager.shop.populator.customer.CustomerDeliveryAddressPopulator;
 import com.salesmanager.shop.populator.customer.CustomerEntityPopulator;
@@ -81,9 +71,6 @@ import com.salesmanager.shop.populator.customer.PersistableCustomerShippingAddre
 import com.salesmanager.shop.populator.customer.ReadableCustomerPopulator;
 import com.salesmanager.shop.populator.customer.ReadableCustomerReviewPopulator;
 import com.salesmanager.shop.utils.EmailTemplatesUtils;
-import com.salesmanager.shop.utils.EmailUtils;
-import com.salesmanager.shop.utils.ImageFilePath;
-import com.salesmanager.shop.utils.LabelUtils;
 import com.salesmanager.shop.utils.LocaleUtils;
 
 
@@ -91,7 +78,6 @@ import com.salesmanager.shop.utils.LocaleUtils;
  * Customer Facade work as an abstraction layer between Controller and Service layer.
  * It work as an entry point to service layer.
  * @author Umesh Awasthi
- * @version 2.2.1
  *
  */
 
@@ -102,22 +88,26 @@ public class CustomerFacadeImpl implements CustomerFacade
 	private static final Logger LOG = LoggerFactory.getLogger(CustomerFacadeImpl.class);
 	private final static int USERNAME_LENGTH=6;
 	
-	private final static String RESET_PASSWORD_TPL = "email_template_password_reset_customer.ftl";
-	
 	public final static String ROLE_PREFIX = "ROLE_";//Spring Security 4
 
 
 	 @Inject
      private CustomerService customerService;
-	 
-	 @Inject
-	 private OptinService optinService;
-	 
-	 @Inject
-     private CustomerOptinService customerOptinService;
 
      @Inject
      private ShoppingCartService shoppingCartService;
+
+     @Inject
+     private ShoppingCartCalculationService shoppingCartCalculationService;
+
+     @Inject
+     private PricingService pricingService;
+
+     @Inject
+     private ProductService productService;
+
+     @Inject
+     private ProductAttributeService productAttributeService;
      
      @Inject
      private LanguageService languageService;
@@ -127,9 +117,6 @@ public class CustomerFacadeImpl implements CustomerFacade
 
      @Inject
      private CustomerOptionService customerOptionService;
-     
- 	@Inject
- 	private LabelUtils messages;
 
 
      @Inject
@@ -163,14 +150,6 @@ public class CustomerFacadeImpl implements CustomerFacade
 
  	@Inject
  	private CoreConfiguration coreConfiguration;
- 	
-	
-	@Inject
-	private EmailUtils emailUtils;
-	
-	@Inject
-	@Qualifier("img")
-	private ImageFilePath imageUtils;
 
     /**
      * Method used to fetch customer based on the username and storecode.
@@ -744,89 +723,5 @@ public class CustomerFacadeImpl implements CustomerFacade
 		customerReviewService.delete(review);
 		
 	}
-
-
-	@Override
-	public void optinCustomer(PersistableCustomerOptin optin, MerchantStore store) throws Exception {
-		Optin optinDef = optinService.getOptinByCode(store, OptinType.NEWSLETTER.name());
-		
-		if(optinDef == null) {
-			LOG.error("Optin " + OptinType.NEWSLETTER.name() + " does not exists");
-			throw new Exception("Optin newsletter does not exist");
-		}
-		
-		//check if customer optin exists
-		com.salesmanager.core.model.system.optin.CustomerOptin customerOptin = customerOptinService.findByEmailAddress(store, optin.getEmail(), OptinType.NEWSLETTER.name());
-
-		if(customerOptin != null) {
-			//exists update
-			customerOptin.setEmail(optin.getEmail());
-			customerOptin.setFirstName(optin.getFirstName());
-			customerOptin.setLastName(optin.getLastName());
-		} else {
-			customerOptin = new com.salesmanager.core.model.system.optin.CustomerOptin();
-			customerOptin.setEmail(optin.getEmail());
-			customerOptin.setFirstName(optin.getFirstName());
-			customerOptin.setLastName(optin.getLastName());
-			customerOptin.setOptinDate(new Date());
-			customerOptin.setOptin(optinDef);
-			customerOptin.setMerchantStore(store);
-		}
-		
-		customerOptinService.save(customerOptin);
-		
-	}
-
-
-	@Override
-	public void resetPassword(Customer customer, MerchantStore store, Language language) throws Exception {
-		
-		
-		String password = UserReset.generateRandomString();
-		String encodedPassword = passwordEncoder.encode(password);
-		
-		customer.setPassword(encodedPassword);
-		customerService.saveOrUpdate(customer);
-		
-		Locale locale = languageService.toLocale(language, store);
-		
-		//send email
-		
-		try {
-
-			//creation of a user, send an email
-			String[] storeEmail = {store.getStoreEmailAddress()};
-			
-			
-			Map<String, String> templateTokens = emailUtils.createEmailObjectsMap(imageUtils.getContextPath(), store, messages, locale);
-			templateTokens.put(EmailConstants.LABEL_HI, messages.getMessage("label.generic.hi", locale));
-	        templateTokens.put(EmailConstants.EMAIL_CUSTOMER_FIRSTNAME, customer.getBilling().getFirstName());
-	        templateTokens.put(EmailConstants.EMAIL_CUSTOMER_LASTNAME, customer.getBilling().getLastName());
-			templateTokens.put(EmailConstants.EMAIL_RESET_PASSWORD_TXT, messages.getMessage("email.customer.resetpassword.text", locale));
-			templateTokens.put(EmailConstants.EMAIL_CONTACT_OWNER, messages.getMessage("email.contactowner", storeEmail, locale));
-			templateTokens.put(EmailConstants.EMAIL_PASSWORD_LABEL, messages.getMessage("label.generic.password",locale));
-			templateTokens.put(EmailConstants.EMAIL_CUSTOMER_PASSWORD, password);
-
-
-			Email email = new Email();
-			email.setFrom(store.getStorename());
-			email.setFromEmail(store.getStoreEmailAddress());
-			email.setSubject(messages.getMessage("label.generic.changepassword",locale));
-			email.setTo(customer.getEmailAddress());
-			email.setTemplateName(RESET_PASSWORD_TPL);
-			email.setTemplateTokens(templateTokens);
-
-
-			
-			emailService.sendHtmlEmail(store, email);
-		
-		} catch (Exception e) {
-			LOG.error("Cannot send email to customer",e);
-		}
-
-		
-	}
-
-
 
 }

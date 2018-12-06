@@ -7,8 +7,6 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.salesmanager.shop.model.customer.address.Address;
-
 public class CustomerEntity extends Customer implements Serializable {
 
 	/**

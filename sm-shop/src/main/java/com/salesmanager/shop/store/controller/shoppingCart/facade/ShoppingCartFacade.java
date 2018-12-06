@@ -61,29 +61,6 @@ public interface ShoppingCartFacade {
 	ReadableShoppingCart getCart(Customer customer, MerchantStore store, Language language) throws Exception;
 	
 	/**
-	 * Modify an item to an existing cart, quantity of line item will reflect item.getQuantity
-	 * @param cartCode
-	 * @param item
-	 * @param store
-	 * @param language
-	 * @return
-	 * @throws Exception
-	 */
-	ReadableShoppingCart addToCart(String cartCode, PersistableShoppingCartItem item, MerchantStore store,
-			Language language) throws Exception;
-	
-	/**
-	 * Add item to shopping cart
-	 * @param item
-	 * @param store
-	 * @param language
-	 * @return
-	 * @throws Exception
-	 */
-	ReadableShoppingCart addToCart(PersistableShoppingCartItem item, MerchantStore store,
-			Language language) throws Exception;
-	
-	/**
 	 * Add product to ShoppingCart
 	 * This method is used by the API
 	 * @param customer
@@ -104,14 +81,4 @@ public interface ShoppingCartFacade {
 	 * @throws Exception
 	 */
 	ReadableShoppingCart getById(Long shoppingCartId, MerchantStore store, Language language) throws Exception;
-	
-	/**
-	 * Retrieves a shopping cart
-	 * @param code
-	 * @param store
-	 * @param language
-	 * @return
-	 * @throws Exception
-	 */
-	ReadableShoppingCart getByCode(String code, MerchantStore store, Language language) throws Exception;
 }

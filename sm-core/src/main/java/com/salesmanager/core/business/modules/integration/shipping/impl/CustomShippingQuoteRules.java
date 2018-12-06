@@ -7,14 +7,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.drools.KnowledgeBase;
 import org.drools.runtime.StatelessKnowledgeSession;
-import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,14 +34,11 @@ public class CustomShippingQuoteRules implements ShippingQuoteModule {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CustomShippingQuoteRules.class);
 	
 	
-	//private StatelessKnowledgeSession shippingPriceRule;
+	private StatelessKnowledgeSession shippingPriceRule;
 	
 	public final static String MODULE_CODE = "customQuotesRules";
 	
-	//private KnowledgeBase kbase;
-	
-	@Inject
-	KieContainer kieShippingCustomContainer;
+	private KnowledgeBase kbase;
 
 	@Override
 	public void validateModuleConfiguration(
@@ -148,11 +141,7 @@ public class CustomShippingQuoteRules implements ShippingQuoteModule {
 		
 		LOGGER.debug("Setting input parameters " + inputParameters.toString());
 		
-        KieSession kieSession = kieShippingCustomContainer.newKieSession();
-        kieSession.insert(inputParameters);
-        kieSession.fireAllRules();
-		
-		//shippingPriceRule.execute(Arrays.asList(new Object[] { inputParameters }));
+		shippingPriceRule.execute(Arrays.asList(new Object[] { inputParameters }));
 
 		if(inputParameters.getPriceQuote() != null) {
 
@@ -173,7 +162,7 @@ public class CustomShippingQuoteRules implements ShippingQuoteModule {
 		
 	}
 
-/*	public StatelessKnowledgeSession getShippingPriceRule() {
+	public StatelessKnowledgeSession getShippingPriceRule() {
 		return shippingPriceRule;
 	}
 
@@ -187,6 +176,6 @@ public class CustomShippingQuoteRules implements ShippingQuoteModule {
 
 	public void setKbase(KnowledgeBase kbase) {
 		this.kbase = kbase;
-	}*/
+	}
 
 }

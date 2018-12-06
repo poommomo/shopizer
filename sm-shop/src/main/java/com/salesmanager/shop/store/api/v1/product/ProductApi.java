@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,31 +23,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.salesmanager.core.business.services.catalog.category.CategoryService;
-import com.salesmanager.core.business.services.catalog.product.PricingService;
 import com.salesmanager.core.business.services.catalog.product.ProductService;
-import com.salesmanager.core.business.services.catalog.product.attribute.ProductAttributeService;
 import com.salesmanager.core.business.services.customer.CustomerService;
 import com.salesmanager.core.business.services.merchant.MerchantStoreService;
 import com.salesmanager.core.model.catalog.category.Category;
 import com.salesmanager.core.model.catalog.product.Product;
 import com.salesmanager.core.model.catalog.product.ProductCriteria;
-import com.salesmanager.core.model.catalog.product.attribute.ProductAttribute;
-import com.salesmanager.core.model.catalog.product.price.FinalPrice;
 import com.salesmanager.core.model.merchant.MerchantStore;
 import com.salesmanager.core.model.reference.language.Language;
 import com.salesmanager.shop.model.catalog.product.PersistableProduct;
 import com.salesmanager.shop.model.catalog.product.ReadableProduct;
 import com.salesmanager.shop.model.catalog.product.ReadableProductList;
-import com.salesmanager.shop.model.catalog.product.ReadableProductPrice;
-import com.salesmanager.shop.model.catalog.product.attribute.ReadableProductVariant;
-import com.salesmanager.shop.model.catalog.product.attribute.ReadableProductVariantValue;
-import com.salesmanager.shop.populator.catalog.ReadableFinalPricePopulator;
 import com.salesmanager.shop.store.controller.product.facade.ProductFacade;
 import com.salesmanager.shop.store.controller.store.facade.StoreFacade;
 import com.salesmanager.shop.utils.ImageFilePath;
 import com.salesmanager.shop.utils.LanguageUtils;
-
-import io.swagger.annotations.ApiOperation;
 
 /**
  * API to create, read, update and delete a Product
@@ -68,12 +57,6 @@ public class ProductApi {
 	
 	@Inject
 	private CustomerService customerService;
-	
-	@Inject
-	private PricingService pricingService;
-	
-	@Inject
-	private ProductAttributeService productAttributeService;
 	
 	@Inject
 	private ProductService productService;
@@ -102,7 +85,7 @@ public class ProductApi {
 		
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 			
 			productFacade.saveProduct(merchantStore, product, language);
@@ -127,7 +110,7 @@ public class ProductApi {
 		
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			productFacade.saveProduct(merchantStore, product, merchantStore.getDefaultLanguage());
 			
 			return product;
@@ -489,7 +472,7 @@ public class ProductApi {
 		
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 			
 			
@@ -529,7 +512,7 @@ public class ProductApi {
 	@ResponseBody
 	public ReadableProduct get(@PathVariable final Long id, @RequestParam(value = "lang", required=false) String lang, HttpServletRequest request, HttpServletResponse response) throws Exception {
 	
-		MerchantStore merchantStore = storeFacade.getByCode(request);
+		MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 		Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 		
 		ReadableProduct product = productFacade.getProduct(merchantStore, id, language);
@@ -542,53 +525,6 @@ public class ProductApi {
 		return product;
 		
 	}
-	
-	@RequestMapping(value = "/products/{id}/variant", method=RequestMethod.POST)
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(httpMethod = "POST", value = "Get product variations (variants) based on possible options", notes = "", produces = "application/json", response = ReadableProductPrice.class)
-	@ResponseBody
-	public ReadableProductPrice calculateVariant(@PathVariable final Long id, @RequestBody ReadableProductVariant variant, @RequestParam(value = "lang", required=false) String lang, HttpServletRequest request, HttpServletResponse response) throws Exception {
-	
-		MerchantStore merchantStore = storeFacade.getByCode(request);
-		Language language = languageUtils.getRESTLanguage(request, merchantStore);	
-		
-		Product product = productService.getById(id);
-		
-		if(product==null) {
-			response.sendError(404, "Product not fount for id " + id);
-			return null;
-		}
-
-		List<ReadableProductVariantValue> ids = variant.getOptions();
-		
-		if(CollectionUtils.isEmpty(ids)) {
-			return null;
-		}
-		
-		List<Long> longIds = new ArrayList<Long>();
-		for(ReadableProductVariantValue n : ids) {
-			longIds.add(n.getValue().longValue());
-		}
-
-		
-		List<ProductAttribute> attributes = productAttributeService.getByAttributeIds(merchantStore, product, longIds);      
-		
-		for(ProductAttribute attribute : attributes) {
-			if(attribute.getProduct().getId().longValue()!=product.getId().longValue()) {
-				return null;
-			}
-		}
-		
-		FinalPrice price = pricingService.calculateProductPrice(product, attributes);
-    	ReadableProductPrice readablePrice = new ReadableProductPrice();
-    	ReadableFinalPricePopulator populator = new ReadableFinalPricePopulator();
-    	populator.setPricingService(pricingService);
-    	populator.populate(price, readablePrice, merchantStore, language);
-    	return readablePrice;
-		
-
-		
-	}
 
 	
     @ResponseStatus(HttpStatus.CREATED)
@@ -597,7 +533,7 @@ public class ProductApi {
     	
 		try {
     	
-	    	MerchantStore merchantStore = storeFacade.getByCode(request);
+	    	MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 	    	
 	    	//get the product
@@ -626,7 +562,7 @@ public class ProductApi {
     	
 		try {
     	
-	    	MerchantStore merchantStore = storeFacade.getByCode(request);
+	    	MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 	    	
 	    	//get the product

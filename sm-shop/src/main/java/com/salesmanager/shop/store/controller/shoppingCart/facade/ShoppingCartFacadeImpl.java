@@ -107,17 +107,6 @@ public class ShoppingCartFacadeImpl
     {
 
         ShoppingCart cartModel = null;
-        
-        /**
-         * Sometimes a user logs in and a shopping cart is present in db (shoppingCartData
-         * but ui has no cookie with shopping cart code so the cart code will have
-         * to be added to the item in order to process add to cart normally
-         */
-        if(shoppingCartData != null && StringUtils.isBlank(item.getCode())) {
-        	item.setCode(shoppingCartData.getCode());
-        }
-        
-        
         if ( !StringUtils.isBlank( item.getCode() ) )
         {
             // get it from the db
@@ -489,13 +478,10 @@ public class ShoppingCartFacadeImpl
                     		shoppingCartService.deleteShoppingCartItem(itemID);
                         }
                     }
-
+                    //cartModel.setLineItems( shoppingCartItemSet );
+                    //shoppingCartService.saveOrUpdate( cartModel );
 
                     cartModel = getCartModel( cartId,store );
-                    
-                    if(cartModel == null) {
-                    	return null;
-                    }
 
 
                     ShoppingCartDataPopulator shoppingCartDataPopulator = new ShoppingCartDataPopulator();
@@ -698,26 +684,24 @@ public class ShoppingCartFacadeImpl
 		
 		return readableCart;
 	}
-	
+
 	@Override
-	public ReadableShoppingCart addToCart(PersistableShoppingCartItem item, MerchantStore store,
+	public ReadableShoppingCart addToCart(Customer customer, PersistableShoppingCartItem item, MerchantStore store,
 			Language language) throws Exception {
 		
-		Validate.notNull(item,"PersistableShoppingCartItem cannot be null");
+		Validate.notNull(customer,"Customer cannot be null");
+		Validate.notNull(customer.getId(),"Customer.id cannot be null or empty");
+		
+		//Check if customer has an existing shopping cart
+		ShoppingCart cartModel = shoppingCartService.getByCustomer(customer);
 		
 		//if cart does not exist create a new one
-
-		ShoppingCart cartModel = new ShoppingCart();
-		cartModel.setMerchantStore(store);
-		cartModel.setShoppingCartCode(uniqueShoppingCartCode());
-
-
-		return readableShoppingCart(cartModel,item,store,language);
-	}
-	
-	private ReadableShoppingCart readableShoppingCart(ShoppingCart cartModel, PersistableShoppingCartItem item, MerchantStore store,
-			Language language) throws Exception {
-		
+		if(cartModel==null) {
+			cartModel = new ShoppingCart();
+			cartModel.setCustomerId(customer.getId());
+			cartModel.setMerchantStore(store);
+			cartModel.setShoppingCartCode(uniqueShoppingCartCode());
+		}
 		
 		com.salesmanager.core.model.shoppingcart.ShoppingCartItem itemModel = createCartItem(cartModel, item, store);
 		
@@ -766,119 +750,6 @@ public class ShoppingCartFacadeImpl
 
 		
 		return readableCart;
-		
-	}
-
-
-	private ReadableShoppingCart modifyCart(ShoppingCart cartModel, PersistableShoppingCartItem item, MerchantStore store,
-			Language language) throws Exception {
-		
-		
-		com.salesmanager.core.model.shoppingcart.ShoppingCartItem itemModel = createCartItem(cartModel, item, store);
-
-        
-        //check if existing product
-       	Set<com.salesmanager.core.model.shoppingcart.ShoppingCartItem> items = cartModel.getLineItems();
-       	//com.salesmanager.core.model.shoppingcart.ShoppingCartItem affectedItem = null;
-       	if(!CollectionUtils.isEmpty(items)) {
-       		Set<com.salesmanager.core.model.shoppingcart.ShoppingCartItem> newItems = new HashSet<com.salesmanager.core.model.shoppingcart.ShoppingCartItem>();
-       		Set<com.salesmanager.core.model.shoppingcart.ShoppingCartItem> removeItems = new HashSet<com.salesmanager.core.model.shoppingcart.ShoppingCartItem>();
-	    	for(com.salesmanager.core.model.shoppingcart.ShoppingCartItem anItem : items) {//take care of existing product
-	    		if(itemModel.getProduct().getId().longValue() == anItem.getProduct().getId()) {
-	    			if(item.getQuantity()==0) {//left aside item to be removed
-	    				//don't add it to new list of item
-	    				removeItems.add(anItem);
-	    			} else {
-	    				//new quantity
-	    				anItem.setQuantity(item.getQuantity());
-	    				newItems.add(anItem);
-	    			}
-	    		} else {
-	    			newItems.add(itemModel);
-	    		}
-	    	}
-	    	
-	    	if(!removeItems.isEmpty()) {
-	    		for(com.salesmanager.core.model.shoppingcart.ShoppingCartItem emptyItem : removeItems) {
-	    			shoppingCartService.deleteShoppingCartItem(emptyItem.getId());
-	    		}
-	    		
-	    	}
-	    	
-	    	if(newItems.isEmpty()) {
-	    		newItems = null;
-	    	}
-	    	cartModel.setLineItems(newItems);
-       	} else {
-           	//new item
-             if(item.getQuantity() > 0) {
-                cartModel.getLineItems().add( itemModel );
-             }
-       	}
-
-       	//if cart items are null just return cart with no items
-
-        saveShoppingCart( cartModel );
-
-        //refresh cart
-        cartModel = shoppingCartService.getById(cartModel.getId(), store);
-        
-        if(cartModel==null) {
-        	return null;
-        }
-
-        shoppingCartCalculationService.calculate( cartModel, store, language );
-        
-        ReadableShoppingCartPopulator readableShoppingCart = new ReadableShoppingCartPopulator();
-        
-        readableShoppingCart.setImageUtils(imageUtils);
-        readableShoppingCart.setPricingService(pricingService);
-        readableShoppingCart.setProductAttributeService(productAttributeService);
-        readableShoppingCart.setShoppingCartCalculationService(shoppingCartCalculationService);
-  
-        ReadableShoppingCart readableCart = new  ReadableShoppingCart();
-        
-        readableShoppingCart.populate(cartModel, readableCart,  store, language);
-
-		
-		return readableCart;
-		
-	}
-
-	@Override
-	public ReadableShoppingCart addToCart(Customer customer, PersistableShoppingCartItem item, MerchantStore store,
-			Language language) throws Exception {
-		
-		Validate.notNull(customer,"Customer cannot be null");
-		Validate.notNull(customer.getId(),"Customer.id cannot be null or empty");
-		
-		//Check if customer has an existing shopping cart
-		ShoppingCart cartModel = shoppingCartService.getByCustomer(customer);
-		
-		//if cart does not exist create a new one
-		if(cartModel==null) {
-			cartModel = new ShoppingCart();
-			cartModel.setCustomerId(customer.getId());
-			cartModel.setMerchantStore(store);
-			cartModel.setShoppingCartCode(uniqueShoppingCartCode());
-		}
-		
-		return readableShoppingCart(cartModel,item,store,language);
-	}
-	
-	@Override
-	public ReadableShoppingCart addToCart(String cartCode, PersistableShoppingCartItem item, MerchantStore store,
-			Language language) throws Exception {
-
-		Validate.notNull(cartCode,"PString cart code cannot be null");
-		Validate.notNull(item,"PersistableShoppingCartItem cannot be null");
-		
-		ShoppingCart cartModel = this.getCartModel(cartCode, store);
-
-
-		return modifyCart(cartModel,item, store, language);
-		
-		
 	}
 	
 	private void saveShoppingCart(ShoppingCart shoppingCart) throws Exception {
@@ -891,7 +762,7 @@ public class ShoppingCartFacadeImpl
 
 	@Override
 	public ReadableShoppingCart getById(Long shoppingCartId, MerchantStore store, Language language) throws Exception {
-
+		// TODO Auto-generated method stub
 		ShoppingCart cart = shoppingCartService.getById(shoppingCartId);
 		
 		ReadableShoppingCart readableCart = null;
@@ -916,31 +787,6 @@ public class ShoppingCartFacadeImpl
 	@Override
 	public ShoppingCart getShoppingCartModel(Long id, MerchantStore store) throws Exception {
 		return shoppingCartService.getById(id);
-	}
-
-	@Override
-	public ReadableShoppingCart getByCode(String code, MerchantStore store, Language language) throws Exception {
-		
-		ShoppingCart cart = shoppingCartService.getByCode(code, store);
-		
-		ReadableShoppingCart readableCart = null;
-		
-		if(cart != null) {
-			
-	        ReadableShoppingCartPopulator readableShoppingCart = new ReadableShoppingCartPopulator();
-	        
-	        readableShoppingCart.setImageUtils(imageUtils);
-	        readableShoppingCart.setPricingService(pricingService);
-	        readableShoppingCart.setProductAttributeService(productAttributeService);
-	        readableShoppingCart.setShoppingCartCalculationService(shoppingCartCalculationService);
-
-	        readableCart = readableShoppingCart.populate(cart, null,  store, language);
-			
-			
-		}
-		
-		return readableCart;
-		
 	}
 
 

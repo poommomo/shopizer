@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.ws.rs.Produces;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,17 +31,7 @@ import com.salesmanager.shop.store.controller.store.facade.StoreFacade;
 import com.salesmanager.shop.utils.ImageFilePath;
 import com.salesmanager.shop.utils.LanguageUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ApiResponse;
-
-import javax.ws.rs.core.MediaType;
-
-
-@Produces({MediaType.APPLICATION_JSON})
 @Controller
-@Api(value = "/api/v1/category")
 @RequestMapping("/api/v1")
 public class CategoryApi {
 	
@@ -66,12 +55,11 @@ public class CategoryApi {
 	
 	
 	@RequestMapping(value = "/category/{id}", method=RequestMethod.GET)
-    @ApiOperation(httpMethod = "GET", value = "Get category list for an given Category id", notes = "List current Category and child category")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "List of category found", response = ReadableCategory.class) })
-	public @ResponseBody ReadableCategory get(@PathVariable final Long id, @RequestParam(value = "lang", required=false) String lang, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	@ResponseBody
+	public ReadableCategory get(@PathVariable final Long id, @RequestParam(value = "lang", required=false) String lang, HttpServletRequest request, HttpServletResponse response) throws Exception {
 	
 		try {
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 			
 			ReadableCategory category  = categoryFacade.getById(merchantStore, id, language);
@@ -105,13 +93,14 @@ public class CategoryApi {
 	 * @throws Exception
 	 */
 	@RequestMapping(value = "/category", method=RequestMethod.GET)
-	public @ResponseBody List <ReadableCategory> getFiltered(
+	@ResponseBody
+	public List <ReadableCategory> getFiltered(
 			@RequestParam(value = "filter", required=false) String filter,
 			@RequestParam(value = "lang", required=false) 
 			String lang, HttpServletRequest request, HttpServletResponse response) throws Exception {
 	
 		try {
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 			
 			List <ReadableCategory> category  = categoryFacade.getCategoryHierarchy(merchantStore, 0, language, filter);
@@ -133,14 +122,15 @@ public class CategoryApi {
 	 * Category creation
 	 */
 	@RequestMapping( value="/private/category", method=RequestMethod.POST)
-	@ResponseStatus(HttpStatus.OK)
-	public @ResponseBody PersistableCategory createCategory(@Valid @RequestBody PersistableCategory category, HttpServletRequest request, HttpServletResponse response) {
+	@ResponseStatus(HttpStatus.CREATED)
+	@ResponseBody
+	public PersistableCategory createCategory(@Valid @RequestBody PersistableCategory category, HttpServletRequest request, HttpServletResponse response) {
 		
 		
 		try {
 
 
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);	
 			categoryFacade.saveCategory(merchantStore, category);
 
@@ -165,7 +155,7 @@ public class CategoryApi {
 		
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			categoryFacade.saveCategory(merchantStore, category);
 
 			return category;

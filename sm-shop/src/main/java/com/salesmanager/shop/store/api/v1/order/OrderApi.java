@@ -79,7 +79,7 @@ public class OrderApi {
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		
-		MerchantStore merchantStore = storeFacade.getByCode(request);
+		MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 		Language language = languageUtils.getRESTLanguage(request, merchantStore);
 		
 	
@@ -135,7 +135,7 @@ public class OrderApi {
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		
-		MerchantStore merchantStore = storeFacade.getByCode(request);
+		MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 		Language language = languageUtils.getRESTLanguage(request, merchantStore);
 		
 		
@@ -162,11 +162,8 @@ public class OrderApi {
 		
 		ReadableOrderList returnList = orderFacade.getReadableOrderList(merchantStore, customer, start, count, language);
 
-		if(returnList==null) {
-			returnList = new ReadableOrderList();
-		}
-		
 		List<ReadableOrder> orders = returnList.getOrders();
+		
 		if(!CollectionUtils.isEmpty(orders)) {
 			for(ReadableOrder order : orders) {
 				order.setCustomer(readableCustomer);
@@ -193,7 +190,7 @@ public class OrderApi {
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		
-		MerchantStore merchantStore = storeFacade.getByCode(request);
+		MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 		Language language = languageUtils.getRESTLanguage(request, merchantStore);
 	
 		Principal principal = request.getUserPrincipal();
@@ -248,7 +245,7 @@ public class OrderApi {
 
 		try {
 			
-			MerchantStore merchantStore = storeFacade.getByCode(request);
+			MerchantStore merchantStore = storeFacade.getByCode(com.salesmanager.core.business.constants.Constants.DEFAULT_STORE);
 			Language language = languageUtils.getRESTLanguage(request, merchantStore);
 			
 			Principal principal = request.getUserPrincipal();

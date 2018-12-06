@@ -26,10 +26,6 @@
 		class="com.salesmanager.shop.store.security.JWTCustomerServicesImpl">
 	</beans:bean>
 	
-	 <beans:bean id="jwtUserDetailsService"
-		class="com.salesmanager.shop.store.security.admin.JWTAdminServicesImpl">
-	</beans:bean>
-	
 
 	<!-- JDBC User details -->
 	<beans:bean id="userDetailsService"
@@ -150,24 +146,18 @@
     </http>
     
     <!-- REST services v1 for Admin REALM -->
-    <http pattern="/api/v1/private/**" 
+	<http pattern="/api/v1/private/**" 
 		create-session="stateless" 
-		use-expressions="true"
-		authentication-manager-ref="jwtAdminAuthenticationManager" 
+		use-expressions="true" 
+		authentication-manager-ref="adminAuthenticationManager" 
 		entry-point-ref="servicesAuthenticationEntryPoint">
-		  <form-login authentication-success-handler-ref="userAuthenticationSuccessHandler" />
-		  <intercept-url pattern="/api/v1/private/login" access="permitAll" />
-		  <intercept-url pattern="/api/v1/private/refresh" access="permitAll" />
-		  <intercept-url pattern="/api/v1/private/**" method="OPTIONS" access="permitAll"/>
 	      <intercept-url pattern="/api/v1/private/**" access="hasRole('AUTH')"/>
-	      <custom-filter ref="authenticationTokenFilter" before="FORM_LOGIN_FILTER"/>
-	      <csrf disabled="true"/>
+	      <!--<intercept-url pattern="/api/v1/**" access="permitAll"/>-->
+	      <form-login authentication-success-handler-ref="servicesAuthenticationSuccessHandler" />
+	      <http-basic />
+	      <csrf disabled="true"/><!-- Spring security 4 -->
     </http>
    
-
-   <!-- 
-   https://stackoverflow.com/questions/40286549/spring-boot-security-cors
-    -->
     <!-- REST services v1 for Customer REALM -->
     <!-- http://www.gauravbytes.com/2017/03/spring-security-digest-authentication.html
     
@@ -223,13 +213,6 @@
 	<!-- Authenticates API -->
  	<authentication-manager id="jwtCustomerAuthenticationManager">
 		<authentication-provider user-service-ref="jwtCustomerDetailsService">
-			<password-encoder ref="passwordEncoder" hash="sha"/>
-		</authentication-provider>
-	</authentication-manager>
-	
-			<!-- Authenticates admin API -->
- 	<authentication-manager id="jwtAdminAuthenticationManager">
-		<authentication-provider user-service-ref="jwtUserDetailsService">
 			<password-encoder ref="passwordEncoder" hash="sha"/>
 		</authentication-provider>
 	</authentication-manager>

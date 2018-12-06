@@ -37,15 +37,13 @@
 				<prop key="CONTEXT_PATH"></prop>
 				<prop key="URL_EXTENSION">.html</prop>
 				<!-- search query -->
-				<prop key="SEARCH_QUERY"><![CDATA[{"query":{"query_string":{"fields":["name^5","description","tags"],"query":"%s","use_dis_max":true}},"aggs":{"categories":{"terms":{"field":"categories"}}}}]]></prop>
-				<!-- autocomplete query -->
-				<prop key="AUTOCOMPLETE_QUERY"><![CDATA[{"size": 10,"query": {"match": {"keyword": {"query": "%s","operator":"and"}}}}]]></prop>
+				<prop key="SEARCH_QUERY"><![CDATA[{"query":{"multi_match":{"query":"%s","type":"best_fields","fields":["name^10","description^1"]}},"aggregations":{"categories":{"terms":{"field":"categories"}},"manufacturer":{"terms":{"field": "manufacturer"}}}}]]></prop>
 				<!-- Google maps key -->
 				<prop key="shopizer.googlemaps_key">AIzaSyB9NBFBiHKJ00SpVlRB495bTktcJE3iwNA</prop>
 				<!-- #https://www.google.com/recaptcha/admin/create -->
 				<!-- to be used with localhost -->
 				<prop key="shopizer.recapatcha_public_key">6Le3DiUUAAAAAGECVhc4zwFewu8bG-6etonJNTvD</prop>
-				<prop key="shopizer.recapatcha_private_key">6Le3DiUUAAAAAPUUz_JVqujTLRITPzbIR85khz6W</prop><!-- secret -->
+				<prop key="shopizer.recapatcha_private_key">6Le3DiUUAAAAAPUUz_JVqujTLRITPzbIR85khz6W</prop>
 				<prop key="shopizer.recapatcha_url"><![CDATA[https://www.google.com/recaptcha/api/siteverify]]></prop>
 				
 				<!-- express checkout url -->

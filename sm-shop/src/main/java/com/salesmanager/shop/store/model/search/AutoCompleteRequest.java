@@ -4,6 +4,9 @@ import org.json.simple.JSONObject;
 
 public class AutoCompleteRequest {
 	
+	//private String collectionName;
+	//private String query;
+	//private String filter;
 	private String merchantCode;
 	private String languageCode;
 	
@@ -25,11 +28,9 @@ public class AutoCompleteRequest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Deprecated
 	public String toJSONString(String query) {
 
-		//{"size": 10,"query": {"match": {"keyword": {"query": "wat","operator":"and"}}}}";
-
+		//{"query": {"match": {"keyword": {"query": "spr","analyzer": "standard"}}}}
 		
 		
 		JSONObject keyword = new JSONObject();
@@ -38,6 +39,7 @@ public class AutoCompleteRequest {
 		JSONObject match = new JSONObject();
 		
 		q.put(QUERY, query);
+		//q.put(TYPE, TYPE_PHRASE);
 		q.put(ANALYZER, STD_ANALYZER);
 		
 		keyword.put(KEYWORD, q);
@@ -45,6 +47,14 @@ public class AutoCompleteRequest {
 		match.put(MATCH, keyword);
 		
 		mq.put(QUERY, match);
+		
+		//StringBuilder qValueBuilder = new StringBuilder();
+		//qValueBuilder.append(query.toLowerCase()).append(ALL);
+		
+		//q.put(KEYWORD, qValueBuilder.toString());
+		//wildcard.put(WILDCARD_QUERY, q);
+		
+		
 		return mq.toJSONString();
 	}
 	

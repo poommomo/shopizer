@@ -390,9 +390,6 @@ public class ShoppingCartController extends AbstractController {
                 
 		ShoppingCartData shoppingCartData=shoppingCartFacade.removeCartItem(lineItemId, shoppingCart.getCode(),store,language);
 
-		if(shoppingCartData == null) {
-			return "redirect:/shop";
-		}
 		
 		if(CollectionUtils.isEmpty(shoppingCartData.getShoppingCartItems())) {
 			shoppingCartFacade.deleteShoppingCart(shoppingCartData.getId(), store);

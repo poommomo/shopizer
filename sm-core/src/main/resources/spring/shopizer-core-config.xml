@@ -29,8 +29,7 @@
 		<beans:bean id="entityManagerFactory" name="shopizerContainer" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
 
 			<beans:property name="dataSource" ref="dataSource" />		
-			<beans:property name="packagesToScan" value="com.salesmanager.core.model" />
-			
+
 			<beans:property name="jpaVendorAdapter">
 				<beans:bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
 					<beans:property name="showSql" value="true" />
@@ -43,15 +42,8 @@
 					<beans:entry key="hibernate.default_schema" value="${db.schema}" />
 					<beans:entry key="hibernate.hbm2ddl.auto" value="${hibernate.hbm2ddl.auto}" />
 					<beans:entry key="hibernate.show_sql" value="true" />
-					<!-- for existing applications, this property should be false -->
-					<beans:entry key="hibernate.id.new_generator_mappings" value="false" />
 					<beans:entry key="hibernate.cache.provider_class" value="org.hibernate.cache.EhCacheProvider" />
 					<beans:entry key="hibernate.cache.use_second_level_cache" value="true" />
-					
-					<!-- character set -->
-					<beans:entry key="hibernate.connection.CharSet" value="utf8" />
-					<beans:entry key="hibernate.connection.characterEncoding" value="utf8" />
-					<beans:entry key="hibernate.connection.useUnicode" value="true" />
 					
 					<!-- Uncomment the following 2 lines to generate shopizer sql schema when the application is built. Remove the schema.sql file once generated, otherwise it will try to create it twice in the test database (table already exist... -->
 					<!--
@@ -92,7 +84,10 @@
      <beans:bean id="persistenceExceptionTranslationPostProcessor"
       class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
       
+        
 
+    
+	
     <!-- in sm-shop -->
    	<beans:bean id="coreConfiguration" class="com.salesmanager.core.business.utils.CoreConfiguration">
 		<beans:property name="properties" ref="shopizer-properties"/>
@@ -148,8 +143,7 @@
 			</beans:list>
 		</beans:property>
 	</beans:bean>
-	</beans:beans>
-
+	</beans:beans> 	
 	
     <beans:beans profile="docker">
     <beans:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -159,20 +153,6 @@
 		    	<beans:value>classpath:profiles/docker/database.properties</beans:value>
 				<beans:value>classpath:email.properties</beans:value>
 				<beans:value>classpath:profiles/docker/shopizer-core.properties</beans:value>
-				<beans:value>classpath:authentication.properties</beans:value>
-			</beans:list>
-		</beans:property>
-	</beans:bean>
-	</beans:beans>
-	
-	<beans:beans profile="aws">
-    <beans:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<beans:property name="ignoreUnresolvablePlaceholders" value="false"/>
-		<beans:property name="locations">
-			<beans:list>
-		    	<beans:value>classpath:profiles/aws/database.properties</beans:value>
-				<beans:value>classpath:email.properties</beans:value>
-				<beans:value>classpath:profiles/aws/shopizer-core.properties</beans:value>
 				<beans:value>classpath:authentication.properties</beans:value>
 			</beans:list>
 		</beans:property>

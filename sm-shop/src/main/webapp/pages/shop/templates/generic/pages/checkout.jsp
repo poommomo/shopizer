@@ -103,11 +103,7 @@ $(document).ready(function() {
 		//can use masked input for phone (USA - CANADA)
 	-->
 
-	paymentModule = '${order.defaultPaymentMethodCode}';
-	log('PaymentModule ' + paymentModule);
-	if(!paymentModule) {
-		paymentModule = '${order.paymentModule}';
-	}
+	setPaymentModule('${order.defaultPaymentMethodCode}');
 	
 	formValid = isFormValid(); //first validation
 
@@ -283,11 +279,7 @@ function isCheckoutFieldValid(field) {
 		//console.log($('input[name=paymentMethodType]:checked', checkoutFormId).val());
 		//var paymentMethod = $('input[name=paymentMethodType]:checked', checkoutFormId).val();
 		var paymentType = $('input[name=paymentMethodType]').val();
-		log('PaymentType ' + paymentType);
-		if(!paymentType) {
-			paymentType = '${order.paymentMethodType}';
-		}
-		log('Payment Method Type ' + paymentType);
+		console.log('Payment Method Type ' + paymentType);
 		if(paymentType=='CREDITCARD') {
 			if (fieldId.indexOf("creditcard") >= 0) {
 				if(fieldId!='creditcard_card_number' || fieldId!='creditcard-card-number') {
@@ -430,7 +422,7 @@ function bindActions() {
 		
 		showSMLoading('#pageContainer');
 		var paymentSelection = $('#paymentModule').val();
-		log('Selection-> ' + paymentSelection);
+		console.log('Selection-> ' + paymentSelection);
 		if(paymentSelection.indexOf('paypal') >= 0 || paymentSelection.indexOf('PAYPAL') >= 0) {
 
 			//$('#paymentMethodType').val('PAYPAL');
@@ -438,41 +430,30 @@ function bindActions() {
 			initPayment('PAYPAL');
 		}
 		else if(paymentSelection.indexOf('stripe') >= 0) {
-			log('Stripe ');
+			//console.log('Stripe ');
 			//$('#paymentMethodType').val('CREDITCARD');
 			$('#paymentMethodType').attr("value", 'CREDITCARD');
 			initStripePayment();
 		}
 		else if(paymentSelection.indexOf('braintree') >= 0) {
-			log('Braintree ' + $('input[name=paymentMethodType]').val());
+			console.log('Braintree ' + $('input[name=paymentMethodType]').val());
 			//$('#paymentMethodType').val('CREDITCARD');
 			$('#paymentMethodType').attr("value", 'CREDITCARD');
-			log('Payment method type -> ' + $('input[name=paymentMethodType]').val());
+			console.log('Payment method type -> ' + $('input[name=paymentMethodType]').val());
 			initBraintreePayment();
 		}
-		else if(paymentSelection.indexOf('moneyorder') >= 0) {
-			log('Money order ' + $('input[name=paymentMethodType]').val());
-			//$('#paymentMethodType').val('CREDITCARD');
-			$('#paymentMethodType').attr("value", 'MONEYORDER');
-			log('Payment method type -> ' + $('input[name=paymentMethodType]').val());
-			submitForm();
-		}
 		else if(paymentSelection.indexOf('beanstream') >= 0) {
-			//log('Beanstream ');
+			//console.log('Beanstream ');
 			//$('#paymentMethodType').val('CREDITCARD');
 			$('#paymentMethodType').attr("value", 'CREDITCARD');
-			submitForm();
 		} else {
 			//submit form
-			submitForm();	
+			//console.log('Checkout ');
+			hideSMLoading('#pageContainer');
+			$('#checkoutForm').submit();
+			
 		}
     });
-}
-
-function submitForm() {
-	log('Checkout ');
-	$('#pageContainer').hideLoading();
-	$('#checkoutForm').submit();
 }
 
 function initPayment(paymentSelection) {
@@ -764,8 +745,7 @@ function initPayment(paymentSelection) {
 									<div class="order-notes">
 										<div class="checkout-form-list">
 											<label><s:message code="label.order.notes" text="Order notes"/></label>
-											<s:message code="label.order.notes.eg" text="Notes for the order or delivery" var="msgNotes"/>
-											<form:textarea id="comments" cols="30" rows="10" path="comments" placeholder="${msgNotes}" />
+											<textarea id="comments" cols="30" rows="10" path="comments" placeholder="<s:message code="label.order.notes.eg" text="Notes for the order or delivery"/>" ></textarea>
 										</div>									
 									</div>
 								</div>
@@ -984,7 +964,7 @@ function initPayment(paymentSelection) {
 												</div>
 											</c:forEach>
 											<!-- values set by javascript -->
-											<input type="hidden" id="paymentMethodType" name="paymentMethodType" value="<c:if test="${order.paymentMethodType!=null}"><c:out value="${order.paymentMethodType}"/></c:if>" />
+											<input type="hidden" id="paymentMethodType" name="paymentMethodType" value="<c:if test="${order.paymentType!=null}"><c:out value="${order.paymentType}"/></c:if>" />
 											<input type="hidden" id="paymentModule" name="paymentModule"
 												value="<c:choose><c:when test="${order.paymentModule!=null}"><c:out value="${order.paymentModule}"/></c:when><c:otherwise><c:out value="${paymentModule}" /></c:otherwise></c:choose>" />
 										</div>
