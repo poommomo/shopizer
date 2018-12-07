@@ -1,4 +1,5 @@
 Shopizer 2.2.0 (for java 1.8 +)
+### By Momo
 -------------------
 
 Java open source e-commerce software
