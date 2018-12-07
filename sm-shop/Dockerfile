@@ -6,11 +6,10 @@ VOLUME /tmp
 # Delete existing ROOT folder
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
-ADD ./target/ROOT.war /developer/tomcat/webapps/
+ADD ./target/ROOT.war ./developer/tomcat/webapps/
 
 ENV JAVA_OPTS="-Xmx1024m"
 
 CMD ["catalina.sh", "run"]
 
 EXPOSE 8080
-
