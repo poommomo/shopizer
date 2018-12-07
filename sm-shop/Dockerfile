@@ -1,5 +1,5 @@
 FROM tomcat:8.5.15-jre8
-MAINTAINER shopizerecomm
+LABEL MAINTAINER="shopizerecomm"
 
 VOLUME /tmp
 
